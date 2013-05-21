@@ -191,6 +191,8 @@ void OSLShader::register_closures(OSLShadingSystem *ss_)
 		closure_ambient_occlusion_params(), closure_ambient_occlusion_prepare);
 	register_closure(ss, "diffuse_ramp", id++,
 		closure_bsdf_diffuse_ramp_params(), closure_bsdf_diffuse_ramp_prepare);
+    register_closure(ss, "test_closure", id++,
+                     closure_bsdf_test_closure_params(), closure_bsdf_test_closure_prepare);
 	register_closure(ss, "phong_ramp", id++,
 		closure_bsdf_phong_ramp_params(), closure_bsdf_phong_ramp_prepare);
 	register_closure(ss, "diffuse_toon", id++,

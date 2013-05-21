@@ -444,6 +444,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 closure color diffuse(normal N) BUILTIN;
 closure color oren_nayar(normal N, float sigma) BUILTIN;
 closure color diffuse_ramp(normal N, color colors[8]) BUILTIN;
+closure color test_closure(normal N, color colors[8]) BUILTIN;
 closure color phong_ramp(normal N, float exponent, color colors[8]) BUILTIN;
 closure color diffuse_toon(normal N, float size, float smooth) BUILTIN;
 closure color specular_toon(normal N, float size, float smooth) BUILTIN;

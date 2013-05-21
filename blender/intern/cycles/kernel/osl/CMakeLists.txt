@@ -15,6 +15,7 @@ set(INC_SYS
 set(SRC
 	background.cpp
 	bsdf_diffuse_ramp.cpp
+    bsdf_test_closure.cpp
 	bsdf_phong_ramp.cpp
 	bsdf_toon.cpp
 	bsdf_westin.cpp
