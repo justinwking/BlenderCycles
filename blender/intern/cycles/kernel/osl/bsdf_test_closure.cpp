@@ -47,8 +47,6 @@ using namespace OSL;
 class TestClosureClosure : public CBSDFClosure {
 public:
 	TestClosureClosure() : CBSDFClosure(LABEL_DIFFUSE) {}
-	Color3 colors[8];
-	float3 fcolors[8];
 
 	size_t memsize() const { return sizeof(*this); }
 	const char *name() const { return "test_closure"; }
@@ -58,8 +56,6 @@ public:
 		sc.prim = this;
 		m_shaderdata_flag = bsdf_test_closure_setup(&sc);
 
-		for(int i = 0; i < 8; i++)
-			fcolors[i] = TO_FLOAT3(colors[i]);
 	}
 
 	bool mergeable(const ClosurePrimitive *other) const
@@ -79,12 +75,12 @@ public:
 
 	float3 eval_reflect(const float3 &omega_out, const float3 &omega_in, float& pdf) const
 	{
-		return bsdf_test_closure_eval_reflect(&sc, fcolors, omega_out, omega_in, &pdf);
+		return bsdf_test_closure_eval_reflect(&sc, omega_out, omega_in, &pdf);
 	}
 
 	float3 eval_transmit(const float3 &omega_out, const float3 &omega_in, float& pdf) const
 	{
-		return bsdf_test_closure_eval_transmit(&sc, fcolors, omega_out, omega_in, &pdf);
+		return bsdf_test_closure_eval_transmit(&sc, omega_out, omega_in, &pdf);
 	}
 
 	int sample(const float3 &Ng,
@@ -93,7 +89,7 @@ public:
 	           float3 &omega_in, float3 &domega_in_dx, float3 &domega_in_dy,
 	           float &pdf, float3 &eval) const
 	{
-		return bsdf_test_closure_sample(&sc, fcolors, Ng, omega_out, domega_out_dx, domega_out_dy,
+		return bsdf_test_closure_sample(&sc, Ng, omega_out, domega_out_dx, domega_out_dy,
 			randu, randv, &eval, &omega_in, &domega_in_dx, &domega_in_dy, &pdf);
 	}
 };
@@ -102,7 +98,6 @@ ClosureParam *closure_bsdf_test_closure_params()
 {
 	static ClosureParam params[] = {
 		CLOSURE_FLOAT3_PARAM(TestClosureClosure, sc.N),
-		CLOSURE_COLOR_ARRAY_PARAM(TestClosureClosure, colors, 8),
 		CLOSURE_STRING_KEYPARAM("label"),
 	    CLOSURE_FINISH_PARAM(TestClosureClosure)
 	};
