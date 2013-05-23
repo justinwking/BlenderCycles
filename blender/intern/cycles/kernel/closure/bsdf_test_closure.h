@@ -247,7 +247,8 @@ bool read_brdf(const char *filename, double* &brdflookup)
 		return false;
 	}
     
-	brdflookup = (double*) malloc (sizeof(double)*3*n);
+	//brdflookup = (double*) malloc (sizeof(double)*3*n);
+    brdflookup = new double(sizeof(double)*3*n);
 	fread(brdflookup, sizeof(double), 3*n, f);
     
 	fclose(f);
@@ -289,13 +290,6 @@ __device float3 dolookup(float3 omega_in,float3 I)
 	// return color value based on lookup
     double red,green,blue;
     lookup_brdf_val(brdflookup, theta_in, phi_in, theta_out, phi_out, red, green, blue);
-    /*green = 1.0;
-    red = 1.0;
-    blue = 1.0;
-    free(&theta_in);
-    free(&phi_in);
-    free(&theta_out);
-    free(&phi_out);*/
     printf("%f,%f,%f\n",(float)red,(float)green,(float)blue);
     return make_float3((float)red, (float)green, (float)blue);
 }
@@ -351,8 +345,7 @@ __device int bsdf_test_closure_sample(const ShaderClosure *sc, float3 Ng, float3
 	}
 	else
 		*pdf = 0.0f;
-	
-	return LABEL_REFLECT|LABEL_DIFFUSE;
+    return LABEL_REFLECT|LABEL_DIFFUSE;
 }
 
 CCL_NAMESPACE_END
