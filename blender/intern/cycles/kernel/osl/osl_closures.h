@@ -53,6 +53,7 @@ OSL::ClosureParam *closure_bsdf_diffuse_toon_params();
 OSL::ClosureParam *closure_bsdf_specular_toon_params();
 OSL::ClosureParam *closure_westin_backscatter_params();
 OSL::ClosureParam *closure_westin_sheen_params();
+OSL::ClosureParam *closure_bsdf_lafortune_params();
 OSL::ClosureParam *closure_bssrdf_params();
 
 void closure_emission_prepare(OSL::RendererServices *, int id, void *data);
@@ -65,6 +66,7 @@ void closure_bsdf_diffuse_toon_prepare(OSL::RendererServices *, int id, void *da
 void closure_bsdf_specular_toon_prepare(OSL::RendererServices *, int id, void *data);
 void closure_westin_backscatter_prepare(OSL::RendererServices *, int id, void *data);
 void closure_westin_sheen_prepare(OSL::RendererServices *, int id, void *data);
+void closure_bsdf_lafortune_prepare(OSL::RendererServices *, int id, void *data);
 void closure_bssrdf_prepare(OSL::RendererServices *, int id, void *data);
 
 enum {

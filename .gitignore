@@ -36,3 +36,9 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+
+blender/release/scripts/addons
+
+blender/release/scripts/addons_contrib
+
+lib/darwin-9.x.universal

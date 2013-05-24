@@ -201,6 +201,8 @@ void OSLShader::register_closures(OSLShadingSystem *ss_)
 		closure_westin_backscatter_params(), closure_westin_backscatter_prepare);
 	register_closure(ss, "westin_sheen", id++,
 		closure_westin_sheen_params(), closure_westin_sheen_prepare);
+    register_closure(ss, "lafortune", id++,
+        closure_bsdf_lafortune_params(), closure_bsdf_lafortune_prepare);
 	register_closure(ss, "bssrdf_cubic", id++,
 		closure_bssrdf_params(), closure_bssrdf_prepare);
 }

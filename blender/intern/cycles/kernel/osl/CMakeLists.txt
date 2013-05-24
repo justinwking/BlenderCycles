@@ -18,6 +18,7 @@ set(SRC
 	bsdf_phong_ramp.cpp
 	bsdf_toon.cpp
 	bsdf_westin.cpp
+	bsdf_lafortune.cpp
 	emissive.cpp
 	osl_bssrdf.cpp
 	osl_closures.cpp
