@@ -1,0 +1,24 @@
+
+#include <stdosl.h>
+
+shader node_lafortune_bsdf(
+	normal Normal = N,
+	color ColorIn = color(0.065704, 0.043181, 0.049810),
+	output closure color BSDF = 0,
+	output closure color LAFORTUNE = 0)
+{
+float coeff[27] =	 /* Change 27 to equal COEFFLEN */
+	    { 	-0.418599, -0.418849, -0.663313,
+		0.399808, 0.397372, 0.591432,
+		3.327653, 3.502029, 5.782860,
+		-1.030919, -1.030556, -1.042135,
+		0.832314, 0.823648, 0.797070,
+		28.298369, 25.766759, 31.002562,
+		0, 0, 1, 0, 0, 1, 0, 0, 1 };
+
+float colormatrix[9] = {    1.063302,  0.382044, -0.445346, -0.298125,  1.667665, -0.369540, -1.322302, -0.446321,  2.768624 };
+
+
+BSDF = ColorIn  * diffuse(N); 
+LAFORTUNE = lafortune(N, colormatrix, coeff);
+}

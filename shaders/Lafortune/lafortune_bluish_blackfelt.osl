@@ -1,0 +1,26 @@
+
+#include <stdosl.h>
+
+shader lafortune_bluish_feltblack(
+	normal Normal = N,
+	color ColorIn = color(0.010648, 0.008233, 0.014273),
+	output closure color BSDF = 0,
+	output closure color LAFORTUNE = 0)
+{
+float coeff[27] = {
+		-0.277165, -0.304075, -0.027758,
+		-0.093227, -0.065992, -0.020082,
+		2.799133, 3.047892, 1.194497,
+		-0.750466, -0.749561, -0.741817,
+		-1.130948, -1.167929, -0.806141,
+		6.860946, 6.931827, 6.484858,
+		-1.001165, -1.004921, -1.007235,
+		-0.476192, -0.205529, -0.249148,
+		69.053333, 94.117332, 94.094831 };
+
+float colormatrix[9] = {1.063302,  0.382044, -0.445346, -0.298125,  1.667665, -0.36954,  -1.322302, -0.446321,  2.768624 };
+
+
+BSDF = ColorIn * diffuse(N); 
+LAFORTUNE = lafortune(N, colormatrix, coeff);
+}
