@@ -1,0 +1,26 @@
+
+#include <stdosl.h>
+
+shader lafortune_bluish_primergrey(
+	normal Normal = N,
+	color ColorIn = color(0.037634, 0.038585, 0.042402),
+	output closure color BSDF = 0,
+	output closure color LAFORTUNE = 0)
+{
+float coeff[27] = {
+		-0.399286, -1.033473, -1.058104,
+		0.167504, 0.009545, -0.068002,
+		2.466633, 7.637253, 8.117645,
+		-1.041861, -1.100108, -1.087779,
+		0.014375, -0.198147, -0.053605,
+		7.993722, 29.446268, 41.988990,
+		-1.098605, -0.379883, -0.449038,
+		-0.145110, 0.159127, 0.173224,
+		31.899719, 2.372852, 2.636161};
+
+float colormatrix[9] = {1.063302,  0.382044, -0.445346, -0.298125,  1.667665, -0.36954,  -1.322302, -0.446321,  2.768624 };
+
+
+BSDF = ColorIn * diffuse(N); 
+LAFORTUNE = lafortune(N, colormatrix, coeff);
+}

@@ -84,19 +84,21 @@ __device float3 bsdf_lafortune_colormatrix(const ShaderClosure *sc, const float 
 __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float coeff[27], const float3 I, const float3 omega_in)
 {
     float3 local_z;
-    float3 local_x, local_y;  /*Unit vector in "u" and "v" directions */
-    float3 V;                   /* Normalized eye vector */
-    float3 Ln;          /* Normalized vector to light */
-    float x, z, f;      /*subterms */
-    float fr, fg, fb;   /* RGB components of the non-Lambertian term */
-    int basepointer, j; /* loop counters */
+    float3 local_x, local_y;  //Unit vector in "u" and "v" directions 
+    float3 V;                   // Normalized eye vector 
+    float3 Ln;          // Normalized vector to light 
+    float x, z, f;      //subterms 
+    float fr, fg, fb;   // RGB components of the non-Lambertian term 
+    int basepointer; // loop counters 
     
-    /* Get unit vector in "u" parameter direction */
-    local_x = normalize(sc->T);
+    local_z = sc->N; 
+    // Get unit vector in "u" parameter direction 
+    make_orthonormals (local_z, &local_x, &local_y);
+    //local_x = sc->T;
     V = normalize(I);
     
-    /* Get y component of the local coordinate system, with the cross product of local_z and local_x. */
-    local_y = cross(local_z,local_x);
+    // Get y component of the local coordinate system, with the cross product of local_z and local_x. 
+    //local_y = cross(local_z,local_x);
     
     Ln = normalize(omega_in);
     
@@ -107,13 +109,13 @@ __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float co
     x = dot(local_x,V) * dot(local_x,Ln) + dot(local_y,V) * dot(local_y,Ln);
     z = -(dot(local_z,V) * dot(local_z,Ln));
     
-    /*Coefficient structure:
-     for each lobe of Nlobes:
-     for each channel of N_WAVES:
-     cxy, cz, n (where cxy, cz are the directional and scale components
-     n is the exponent for the cosine
-     */
-    
+     //Coefficient structure:
+     //for each lobe of Nlobes:
+     //for each channel of N_WAVES:
+     //cxy, cz, n (where cxy, cz are the directional and scale components
+     //n is the exponent for the cosine
+     
+ 
     for ( basepointer=0; basepointer<COEFFLEN; basepointer += LOBESIZE * N_WAVES ) {
         float rexponent = coeff[basepointer + 2];
         float gexponent = coeff[basepointer + LOBESIZE + 2];
@@ -124,7 +126,7 @@ __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float co
         fb = 0.0f;
         
         f = -x * coeff[basepointer] + z * coeff[basepointer + 1];
-        
+        //printf("%f\n",(float)f);
         if ( f > 0.001 * rexponent )
         {
             fr = pow ( f, rexponent);
@@ -144,9 +146,13 @@ __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float co
             fb = pow ( f, bexponent);
         }
     }
-        return make_float3(fr,fg,fb)  *  dot(local_z,Ln);
-    
+    //printf("***NEWSAMPLE***\nlocal_x = np.array([%f,%f,%f])\nlocal_y = np.array([ %f,%f,%f])\nlocal_z = np.array([ %f,%f,%f])\n",(float)local_x[0],(float)local_x[1],(float)local_x[2],(float)local_y[0],(float)local_y[1],(float)local_y[2],(float)local_z[0],(float)local_z[1],(float)local_z[2]);
+    //std::cout << "V: "<<V[0]<<V[1]<<V[2]<<"\n";
+    //printf("***NEWSAMPLE***\nlocal_x = x%f, z%f, f%f])\n",(float)x,(float)z,(float)f);
+    return make_float3(fr,fg,fb)  *  dot(local_z,Ln);
+
 }
+
 
 __device int bsdf_lafortune_setup(ShaderClosure *sc)
 {
@@ -160,19 +166,16 @@ __device void bsdf_lafortune_blur(ShaderClosure *sc, float roughness)
 
 __device float3 bsdf_lafortune_eval_reflect(const ShaderClosure *sc, const float coeff[27], const float colormatrix[8], const float3 I, const float3 omega_in, float *pdf)
 {
-	float3 N = sc->N;
+    if (dot(sc->N, omega_in) > 0.0f) {
     float3 coeffcolor = bsdf_lafortune_get_color(sc, coeff, I, omega_in);
-    
-    float cos_pi = fmaxf(dot(N, omega_in), 0.0f);
-	*pdf = cos_pi * M_1_PI_F;
-    
+	*pdf = M_1_PI_F;
     return bsdf_lafortune_colormatrix(sc, colormatrix, coeffcolor);
+    }
+	else {
+		*pdf = 0.0f;
+		return make_float3(0.0f, 0.0f, 0.0f);
+    }
     
-    /*
-	float cos_pi = fmaxf(dot(N, omega_in), 0.0f);
-	*pdf = cos_pi * M_1_PI_F;
-	return bsdf_diffuse_ramp_get_color(sc, colors, cos_pi) * M_1_PI_F;
-     */
 }
 
 __device float3 bsdf_lafortune_eval_transmit(const ShaderClosure *sc, const float3 I, const float3 omega_in, float *pdf)
@@ -188,7 +191,8 @@ __device int bsdf_lafortune_sample(const ShaderClosure *sc, const float coeff[27
 	sample_cos_hemisphere(N, randu, randv, omega_in, pdf);
 
 	if(dot(Ng, *omega_in) > 0.0f) {
-		*eval = bsdf_lafortune_get_color(sc, coeff, I, *omega_in);
+		//*eval = make_float3(*pdf, *pdf, *pdf);
+        *eval = bsdf_lafortune_colormatrix(sc, colormatrix,bsdf_lafortune_get_color(sc, coeff, I, *omega_in));
 #ifdef __RAY_DIFFERENTIALS__
 		*domega_in_dx = (2 * dot(N, dIdx)) * N - dIdx;
 		*domega_in_dy = (2 * dot(N, dIdy)) * N - dIdy;

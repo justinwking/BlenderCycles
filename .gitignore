@@ -42,3 +42,23 @@ blender/release/scripts/addons
 blender/release/scripts/addons_contrib
 
 lib/darwin-9.x.universal
+
+*.oso
+
+*.blend1
+
+*.blend2
+
+shaders/Lafortune/lafortuneball(BluishBlackFelt)+RoughGloss v1.png
+
+shaders/Lafortune/lafortuneball(ClayRed)+Gloss v1.png
+
+shaders/Lafortune/lafortuneball(ClayRed)+Gloss v2+"frontlight".png
+
+shaders/Lafortune/lafortuneball(ClayRed)+Gloss v2.png
+
+shaders/Lafortune/lafortuneball(Steve) v1.png
+
+shaders/Lafortune/lafortuneball + green diffuse+ glossy.png
+
+shaders/Lafortune/lafortuneball + red diffuse + glossy.png
