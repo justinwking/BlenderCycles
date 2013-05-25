@@ -1,0 +1,3 @@
+I receive the following error, even though the osl shader compiles, etc.
+
+ERROR: Closure 'lafortune' is not supported by the current renderer, called from (../Lafortune/lafortune_primergray.osl:25)
