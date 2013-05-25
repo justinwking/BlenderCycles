@@ -93,7 +93,6 @@ __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float co
     
     /* Get unit vector in "u" parameter direction */
     local_x = normalize(sc->T);
-    local_z = normalize(sc->N);
     V = normalize(I);
     
     /* Get y component of the local coordinate system, with the cross product of local_z and local_x. */
