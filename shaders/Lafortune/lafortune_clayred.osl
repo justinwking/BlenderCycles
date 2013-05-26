@@ -22,5 +22,6 @@ float colormatrix[9] = {1.063302,  0.382044, -0.445346, -0.298125,  1.667665, -0
 
 
 BSDF = ColorIn * diffuse(N); 
-LAFORTUNE = lafortune(N, colormatrix, coeff);
+LAFORTUNE = lafortune(N);
+//, colormatrix, coeff);
 }

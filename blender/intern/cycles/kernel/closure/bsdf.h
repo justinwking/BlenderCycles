@@ -21,6 +21,7 @@
 #include "../closure/bsdf_oren_nayar.h"
 #include "../closure/bsdf_phong_ramp.h"
 #include "../closure/bsdf_diffuse_ramp.h"
+#include "../closure/bsdf_lafortune.h"
 #include "../closure/bsdf_microfacet.h"
 #include "../closure/bsdf_reflection.h"
 #include "../closure/bsdf_refraction.h"
@@ -56,6 +57,9 @@ __device int bsdf_sample(KernelGlobals *kg, const ShaderData *sd, const ShaderCl
 			label = bsdf_phong_ramp_sample(sc, sd->Ng, sd->I, sd->dI.dx, sd->dI.dy, randu, randv,
 				eval, omega_in, &domega_in->dx, &domega_in->dy, pdf);
 			break;
+        case CLOSURE_BSDF_LAFORTUNE_ID:
+            label = bsdf_diffuse_ramp_sample(sc, sd->Ng, sd->I, sd->dI.dx, sd->dI.dy, randu, randv,
+                eval, omega_in, &domega_in->dx, &domega_in->dy, pdf);
 		case CLOSURE_BSDF_DIFFUSE_RAMP_ID:
 			label = bsdf_diffuse_ramp_sample(sc, sd->Ng, sd->I, sd->dI.dx, sd->dI.dy, randu, randv,
 				eval, omega_in, &domega_in->dx, &domega_in->dy, pdf);

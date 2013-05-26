@@ -45,9 +45,20 @@ using namespace OSL;
 
 class LafortuneClosure : public CBSDFClosure {
 public:
-	LafortuneClosure() : CBSDFClosure(LABEL_GLOSSY) {}
-	float colormatrix[9];
-	float coeff[27];
+	LafortuneClosure() : CBSDFClosure(LABEL_DIFFUSE) {}
+	float colormatrix[9]= {1.063302,  0.382044, -0.445346, -0.298125,  1.667665, -0.36954,  -1.322302, -0.446321,  2.768624 };
+	float coeff[27]= {
+		-0.399286, -1.033473, -1.058104,
+		0.167504, 0.009545, -0.068002,
+		2.466633, 7.637253, 8.117645,
+        
+		-1.041861, -1.100108, -1.087779,
+		0.014375, -0.198147, -0.053605,
+		7.993722, 29.446268, 41.988990,
+        
+		-1.098605, -0.379883, 	 ,
+		-0.145110, 0.159127, 0.173224,
+		31.899719, 2.372852, 2.636161};
 
 	size_t memsize() const { return sizeof(*this); }
 	const char *name() const { return "lafortune"; }
@@ -73,7 +84,7 @@ public:
 		out << name() << " ((" << sc.N[0] << ", " << sc.N[1] << ", " << sc.N[2] << "))";
 	}
 
-	float3 eval_reflect(const float3 &omega_out, const float3 &omega_in, float& pdf) const
+	float3 eval_reflect(const float3 &omega_out, /*float colormatrix[3], float coeff[27],*/const float3 &omega_in, float& pdf) const
 	{
 		return bsdf_lafortune_eval_reflect(&sc, colormatrix, coeff, omega_out, omega_in, &pdf);
 	}
@@ -83,7 +94,7 @@ public:
 		return bsdf_lafortune_eval_transmit(&sc, omega_out, omega_in, &pdf);
 	}
 
-	int sample(const float3 &Ng,
+	int sample(const float3 &Ng, /*float colormatrix[3], float coeff[27],*/
 	           const float3 &omega_out, const float3 &domega_out_dx, const float3 &domega_out_dy,
 	           float randu, float randv,
 	           float3 &omega_in, float3 &domega_in_dx, float3 &domega_in_dy,
@@ -98,15 +109,15 @@ ClosureParam *closure_bsdf_lafortune_params()
 {
 	static ClosureParam params[] = {
 		CLOSURE_FLOAT3_PARAM(LafortuneClosure, sc.N),
-		CLOSURE_COLOR_ARRAY_PARAM(LafortuneClosure, colormatrix, 9),
-        CLOSURE_FLOAT_ARRAY_PARAM(LafortuneClosure, coeff, 27),
+		//CLOSURE_COLOR_ARRAY_PARAM(LafortuneClosure, colormatrix, 9),
+        //CLOSURE_FLOAT_ARRAY_PARAM(LafortuneClosure, coeff, 27),
 		CLOSURE_STRING_KEYPARAM("label"),
 	    CLOSURE_FINISH_PARAM(LafortuneClosure)
 	};
 	return params;
 }
 
-CLOSURE_PREPARE(closure_bsdf_lafortune_prepare, LafortuneClosure)
+CLOSURE_PREPARE(closure_bsdf_lafortune_prepare, LafortuneClosure);
 
 CCL_NAMESPACE_END
 

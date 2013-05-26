@@ -66,7 +66,7 @@
 #define __BSDF_LAFORTUNE_H__
 
 CCL_NAMESPACE_BEGIN
- 
+
 __device float3 bsdf_lafortune_colormatrix(const ShaderClosure *sc, const float colormatrix[9], const float3 ColorIn)
 {
 	float ColorInR = ColorIn[0];
@@ -77,37 +77,38 @@ __device float3 bsdf_lafortune_colormatrix(const ShaderClosure *sc, const float 
     float fg = colormatrix[3] * ColorInR + colormatrix[4] * ColorInG  + colormatrix[5] * ColorInB;
     float fb = colormatrix[6] * ColorInR + colormatrix[7] * ColorInG  + colormatrix[8] * ColorInB;
     
+
+    //fr = max(min(fr255, 1.0f),0.0f);
+    //fg = max(min(fg/255, 1.0f),0.0f);
+    //fb = max(min(fb/255, 1.0f),0.0f);
     return make_float3(fr,fg,fb);
 
 }
 
 __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float coeff[27], const float3 I, const float3 omega_in)
 {
-    float3 local_z;
-    float3 local_x, local_y;  //Unit vector in "u" and "v" directions 
-    float3 V;                   // Normalized eye vector 
-    float3 Ln;          // Normalized vector to light 
-    float x, z, f;      //subterms 
+    
+    float3 T, B;  //Unit vector in "u" and "v" directions
+    float xy, z, f;      //subterms
     float fr, fg, fb;   // RGB components of the non-Lambertian term 
     int basepointer; // loop counters 
     
-    local_z = sc->N; 
-    // Get unit vector in "u" parameter direction 
-    make_orthonormals (local_z, &local_x, &local_y);
-    //local_x = sc->T;
-    V = normalize(I);
-    
-    // Get y component of the local coordinate system, with the cross product of local_z and local_x. 
-    //local_y = cross(local_z,local_x);
-    
-    Ln = normalize(omega_in);
+    float3 N = sc->N;
+    // Get the tangent and binormal parameter direction. 
+    make_orthonormals (N, &T, &B);
     
     // We will compute the following terms
     // x = x_in * x_view + y_in * y_view
     // z = z_in * z_view
     
-    x = dot(local_x,V) * dot(local_x,Ln) + dot(local_y,V) * dot(local_y,Ln);
-    z = -(dot(local_z,V) * dot(local_z,Ln));
+    float3 Lin = normalize(omega_in);
+    float3 Iout = normalize(I);
+    T = normalize(T);
+    B = normalize(B);
+    N = normalize(N);
+    
+    xy = -(dot(T, Lin) * dot(T,Iout) + dot(B, Lin) * dot(B,Iout));
+    z = (dot(N, Lin) * dot(N,Iout));
     
      //Coefficient structure:
      //for each lobe of Nlobes:
@@ -115,48 +116,84 @@ __device float3 bsdf_lafortune_get_color(const ShaderClosure *sc, const float co
      //cxy, cz, n (where cxy, cz are the directional and scale components
      //n is the exponent for the cosine
      
- 
+    fr = 0.0f;
+    fg = 0.0f;
+    fb = 0.0f;
+    
+    //float maxRexp= fmaxf(fmaxf(coeff[basepointer + 2],coeff[basepointer + 2 + LOBESIZE * N_WAVES]),coeff[basepointer + 2 + (2 * LOBESIZE * N_WAVES)]);
+    //float maxGexp= fmaxf(fmaxf(coeff[basepointer + LOBESIZE + 2],coeff[basepointer + LOBESIZE + 2 + LOBESIZE * N_WAVES]),coeff[basepointer + LOBESIZE + 2 + (2 * LOBESIZE * N_WAVES)]);
+    //float maxBexp= fmaxf(fmaxf(coeff[basepointer + (2 * LOBESIZE) + 2],coeff[basepointer + (2 * LOBESIZE) + 2 + LOBESIZE * N_WAVES]),coeff[basepointer + (2 * LOBESIZE) + 2 + (2 * LOBESIZE * N_WAVES)]);
+
     for ( basepointer=0; basepointer<COEFFLEN; basepointer += LOBESIZE * N_WAVES ) {
+    basepointer = LOBESIZE * N_WAVES;
         float rexponent = coeff[basepointer + 2];
         float gexponent = coeff[basepointer + LOBESIZE + 2];
         float bexponent = coeff[basepointer + (2 * LOBESIZE) + 2];
         
-        fr = 0.0f;
-        fg = 0.0f;
-        fb = 0.0f;
         
-        f = -x * coeff[basepointer] + z * coeff[basepointer + 1];
+        
+        f = -xy * coeff[basepointer] + z * coeff[basepointer + 1];
         //printf("%f\n",(float)f);
         if ( f > 0.001 * rexponent )
         {
-            fr = pow ( f, rexponent);
+            fr += pow ( f, rexponent);
         }
         
-        f = -x * coeff[basepointer+LOBESIZE] + z * coeff[basepointer+LOBESIZE+1];
+        f = -xy * coeff[basepointer+LOBESIZE] + z * coeff[basepointer+LOBESIZE+1];
         
         if ( f > 0.001 * gexponent )
         {
-            fg = pow ( f, gexponent);
+            fg += pow ( f, gexponent);
         }
         
-        f = -x * coeff[basepointer+2*LOBESIZE] + z * coeff[basepointer+2*LOBESIZE+1];
+        f = -xy * coeff[basepointer+2*LOBESIZE] + z * coeff[basepointer+2*LOBESIZE+1];
         
         if ( f > 0.001 * bexponent )
         {
-            fb = pow ( f, bexponent);
+            fb += pow ( f, bexponent);
         }
     }
+   /* basepointer = 0;
+    float rexponent = coeff[basepointer + 6];
+    float gexponent = coeff[basepointer + 7];
+    float bexponent = coeff[basepointer + 8];
+    
+    
+    
+    f = -xy * coeff[basepointer] + z * coeff[basepointer + LOBESIZE + 1];
+    //printf("%f\n",(float)f);
+    if ( f > 0.001 * rexponent )
+    {
+        fr += pow ( f, rexponent);
+    }
+    
+    f = -xy * coeff[basepointer+1] + z * coeff[basepointer + LOBESIZE+1];
+    
+    if ( f > 0.001 * gexponent )
+    {
+        fg += pow ( f, gexponent);
+    }
+    
+    f = -xy * coeff[basepointer+2] + z * coeff[basepointer + LOBESIZE + 2];
+    
+    if ( f > 0.001 * bexponent )
+    {
+        fb += pow ( f, bexponent);
+    }*/
+
     //printf("***NEWSAMPLE***\nlocal_x = np.array([%f,%f,%f])\nlocal_y = np.array([ %f,%f,%f])\nlocal_z = np.array([ %f,%f,%f])\n",(float)local_x[0],(float)local_x[1],(float)local_x[2],(float)local_y[0],(float)local_y[1],(float)local_y[2],(float)local_z[0],(float)local_z[1],(float)local_z[2]);
     //std::cout << "V: "<<V[0]<<V[1]<<V[2]<<"\n";
-    //printf("***NEWSAMPLE***\nlocal_x = x%f, z%f, f%f])\n",(float)x,(float)z,(float)f);
-    return make_float3(fr,fg,fb)  *  dot(local_z,Ln);
+
+    printf("(r%f, g%f, b%f]),xy%f,z%f\n",(float)fr,(float)fg,(float)fb,(float)xy,(float)z);
+
+    return make_float3(fr,fg,fb);
 
 }
 
 
 __device int bsdf_lafortune_setup(ShaderClosure *sc)
 {
-	sc->type = CLOSURE_BSDF_LAFORTUNE_ID;
+	sc->type = CLOSURE_BSDF_DIFFUSE_RAMP_ID;
 	return SD_BSDF | SD_BSDF_HAS_EVAL;
 }
 
@@ -166,10 +203,15 @@ __device void bsdf_lafortune_blur(ShaderClosure *sc, float roughness)
 
 __device float3 bsdf_lafortune_eval_reflect(const ShaderClosure *sc, const float coeff[27], const float colormatrix[8], const float3 I, const float3 omega_in, float *pdf)
 {
+    float3 N = sc->N;
     if (dot(sc->N, omega_in) > 0.0f) {
-    float3 coeffcolor = bsdf_lafortune_get_color(sc, coeff, I, omega_in);
-	*pdf = M_1_PI_F;
-    return bsdf_lafortune_colormatrix(sc, colormatrix, coeffcolor);
+   
+        float cos_pi = fmaxf(dot(N, omega_in), 0.0f) * M_1_PI_F;
+        *pdf = cos_pi;
+                //return make_float3(cos_pi, cos_pi, cos_pi);
+        float3 coeffcolor = bsdf_lafortune_get_color(sc, coeff, I, omega_in);
+
+        return bsdf_lafortune_colormatrix(sc, colormatrix, coeffcolor);
     }
 	else {
 		*pdf = 0.0f;
@@ -201,7 +243,7 @@ __device int bsdf_lafortune_sample(const ShaderClosure *sc, const float coeff[27
 	else
 		*pdf = 0.0f;
 	
-	return LABEL_REFLECT|LABEL_GLOSSY;
+	return LABEL_REFLECT|LABEL_DIFFUSE;
 }
 
 CCL_NAMESPACE_END

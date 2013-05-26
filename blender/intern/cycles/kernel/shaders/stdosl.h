@@ -463,7 +463,7 @@ closure color emission() BUILTIN;
 closure color background() BUILTIN;
 closure color holdout() BUILTIN;
 closure color ambient_occlusion() BUILTIN;
-closure color lafortune(normal N, float colormatrix[9], float coeff[27]) BUILTIN;
+closure color lafortune(normal N) BUILTIN;//, float colormatrix[9], float coeff[27]) BUILTIN;
 closure color bssrdf_cubic(normal N, vector radius) BUILTIN;
 
 // Renderer state

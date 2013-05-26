@@ -53,6 +53,7 @@
 #include "closure/bsdf_transparent.h"
 #include "closure/bsdf_ward.h"
 #include "closure/bsdf_westin.h"
+#include "closure/bsdf_lafortune.h"
 
 CCL_NAMESPACE_BEGIN
 
